@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gunbound Wind Chart (WC) — 8 Direções</title>
+  <!-- Fonte tecnológica -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="app">
+    <!-- Seletores de vento (1–13 esquerda, 14–26 direita) -->
+    <aside class="wind-selectors left outline" aria-label="Seletores de força do vento 1 a 13">
+      <div class="wind-col" id="windLeftCol"></div>
+    </aside>
+
+    <section class="center-stack">
+      <!-- Rosa dos ventos (WC) 450x450 -->
+      <div id="wc" class="wc outline" aria-label="Rosa dos ventos">
+        <!-- SVG 8 direções -->
+        <svg id="wcSvg" viewBox="0 0 450 450" width="450" height="450" aria-hidden="true"></svg>
+
+        <!-- Rótulos cardeais -->
+        <div class="wc-overlay">
+          <div class="wc-label top">N</div>
+          <div class="wc-label right">L</div>
+          <div class="wc-label bottom">S</div>
+          <div class="wc-label left">O</div>
+        </div>
+
+        <!-- Ângulo no centro -->
+        <div class="wc-center-angle" id="wcCenterAngle">70°</div>
+      </div>
+
+      <!-- Painel de resultado -->
+      <div class="panel outline">
+        <div class="row">
+          <div class="box">
+            <div class="label">Ângulo base</div>
+            <div class="value"><span id="baseAngle">70</span>°</div>
+          </div>
+          <div class="box">
+            <div class="label">Direção do vento</div>
+            <div class="value" id="dirLabel">—</div>
+          </div>
+          <div class="box">
+            <div class="label">Força do vento</div>
+            <div class="value"><span id="windStrength">—</span></div>
+          </div>
+          <div class="box">
+            <div class="label">Posição alvo (RDP)</div>
+            <div class="value" id="rdpLabel">—</div>
+          </div>
+          <div class="box highlight">
+            <div class="label">Ângulo corrigido</div>
+            <div class="value big"><span id="correctedAngle">70</span>°</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="wind-selectors right outline" aria-label="Seletores de força do vento 14 a 26">
+      <div class="wind-col" id="windRightCol"></div>
+    </aside>
+  </main>
+
+  <!-- RDP 800x40 -->
+  <footer class="rdp-footer">
+    <div id="rdp" class="rdp outline" aria-label="Régua de posição (RDP)">
+      <div class="rdp-segment" data-fraction="1">1/4</div>
+      <div class="rdp-segment" data-fraction="2">2/4</div>
+      <div class="rdp-segment" data-fraction="3">3/4</div>
+      <div class="rdp-segment" data-fraction="4">4/4</div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="info.js"></script>
+</body>
+</html>
