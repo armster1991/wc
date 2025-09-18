@@ -1,4 +1,4 @@
-// === Força Info Plug-and-Play (versão segura) ===
+// === Força Info Plug-and-Play (com ajuste N/S e overcap) ===
 document.addEventListener('DOMContentLoaded', () => {
   const style = document.createElement('style');
   style.textContent = `
@@ -29,38 +29,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const infoEl = document.createElement('div');
   infoEl.id = 'forcaInfo';
-  infoEl.textContent = 'USE FORÇA: —';
+  infoEl.textContent = 'USE FORÇA: 2.4';
   document.body.appendChild(infoEl);
 
-  const baseForce = { 1: 1.4, 2: 2.1, 3: 2.5, 4: 2.9 };
-
   function updateForceInfo() {
-    const posText = document.getElementById('rdpLabel')?.textContent || '';
+    const centerEl = document.getElementById('wcCenterAngle');
     const dirText = document.getElementById('dirLabel')?.textContent || '';
     const windStr = parseInt(document.getElementById('windStrength')?.textContent) || 0;
 
-    const match = posText.match(/(\d)\/4/);
-    if (!match) {
-      infoEl.textContent = 'USE FORÇA: —';
-      return;
-    }
-    const pos = parseInt(match[1]);
-    let force = baseForce[pos] ?? null;
-    if (force == null) {
-      infoEl.textContent = 'USE FORÇA: —';
+    // Se estiver em overcap, mostra aviso
+    if (centerEl && centerEl.classList.contains('overcap')) {
+      infoEl.textContent = 'AJUSTE A FORÇA';
       return;
     }
 
-    // Ajustes para N e S
-    if (/↑ N/i.test(dirText)) {
+    // Base fixa
+    let force = 2.4;
+
+    // Ajuste para Norte
+    if (/↑\s*N/i.test(dirText)) {
       force += (windStr / 5) * 0.1;
-    } else if (/↓ S/i.test(dirText)) {
+    }
+
+    // Ajuste para Sul
+    else if (/↓\s*S/i.test(dirText)) {
       force += (windStr / 8) * 0.1;
     }
 
     infoEl.textContent = `USE FORÇA: ${force.toFixed(1)}`;
   }
 
-  // Atualiza a cada 200ms (leve e sem observer recursivo)
+  // Atualiza a cada 200ms
   setInterval(updateForceInfo, 200);
 });
