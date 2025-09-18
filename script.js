@@ -1,9 +1,9 @@
 /* Estado global */
 const state = {
-  baseAngle: 70,
-  windStrength: null,   // 1..26
-  directionIndex: null, // 0..7 (N, NE, E, SE, S, SW, W, NW)
-  distanceQuarter: null // 1..4 (RDP) — não afeta o cálculo, só UI
+  rdpIndex: 0,           // 0..29
+  baseAngle: 89,         // começa em 89°
+  windStrength: null,    // 1..26
+  directionIndex: null   // 0..7 (N, NE, E, SE, S, SW, W, NW)
 };
 
 /* Direções (8 em sentido horário começando no Norte) */
@@ -18,13 +18,10 @@ const DIRECTIONS = [
   { key: "NW", label: "↖ NW", side: "left" }
 ];
 
-/* Regras do wind chart (fixas, conforme especificação) */
+/* Regras do wind chart */
 const RULES = {
-  // Neutros: mantêm 70°
   "N":   { type: "neutral" },
   "S":   { type: "neutral" },
-
-  // NE: /2, depois /2 do resultado e soma os dois; se vento > 11, -1 no ajuste; soma no ângulo
   "NE":  { type: "custom", exec: (wind) => {
             const a1 = wind / 2;
             const a2 = a1 / 2;
@@ -32,20 +29,10 @@ const RULES = {
             if (wind > 11) adj -= 1;
             return Math.max(0, adj);
           } },
-
-  // E: /2 e soma; exceção: {9,10,11,19,20,21} => /10
   "E":   { type: "divList", rightDiv: 2, list: [9,10,11,19,20,21], listDiv: 10 },
-
-  // SE: /4 e soma
   "SE":  { type: "simpleDiv", div: 4 },
-
-  // SW: /2 e subtrai; exceção: {9,10,11,29,20,21} => /10 (mantido como você escreveu)
   "SW":  { type: "divList", rightDiv: 2, list: [9,10,11,29,20,21], listDiv: 10 },
-
-  // W: /2 e subtrai; exceção: {9,10,11,19,20,21} => /10
   "W":   { type: "divList", rightDiv: 2, list: [9,10,11,19,20,21], listDiv: 10 },
-
-  // NW: /3 e subtrai; se vento > 12, -1 no ajuste; se vento >= 25, -2 no ajuste
   "NW":  { type: "divWithThresholds", div: 3,
            thresholds: [
              { cond: (w) => w > 12,  delta: -1 },
@@ -55,30 +42,31 @@ const RULES = {
 
 /* Utils */
 function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
-function fmt(n) {
-  if (Number.isFinite(n)) return String(Math.round(n)); // exibir ângulo inteiro (ex.: 83)
-  return "—";
+function fmt(n) { return Number.isFinite(n) ? String(Math.round(n)) : "—"; }
+function polar(cx, cy, r, angle) {
+  return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
 }
 
-/* Inicialização da UI */
+/* Inicialização */
 document.addEventListener("DOMContentLoaded", () => {
   buildWCSvg8();
   buildWindSelectors();
-  initRDP();
+  initRDP30();
   updatePanel(state.baseAngle);
+  updateForceText(2.4);
 });
 
-/* Construção da rosa dos ventos (8 setores) com offset corrigido */
+/* Rosa dos ventos */
 function buildWCSvg8() {
   const svg = document.getElementById("wcSvg");
+  if (!svg) return;
   const cx = 225, cy = 225, r = 215, inner = 70;
   const sectors = 8;
   const sweep = (2 * Math.PI) / sectors;
 
-  // Definições de gradiente
+  svg.innerHTML = "";
   svg.appendChild(defs());
 
-  // Disco externo
   const bg = document.createElementNS("http://www.w3.org/2000/svg", "circle");
   bg.setAttribute("cx", cx); bg.setAttribute("cy", cy); bg.setAttribute("r", r);
   bg.setAttribute("fill", "url(#gradBg)");
@@ -86,7 +74,6 @@ function buildWCSvg8() {
   svg.appendChild(bg);
 
   for (let i = 0; i < sectors; i++) {
-    // Offset corrigido para alinhar Norte/Sul perfeitamente
     const start = -Math.PI / 2 + i * sweep - (sweep / 2);
     const end   = start + sweep;
 
@@ -107,18 +94,15 @@ function buildWCSvg8() {
     path.setAttribute("d", d);
     path.setAttribute("fill", i % 2 === 0 ? "rgba(98,196,255,0.08)" : "rgba(98,196,255,0.04)");
     path.setAttribute("stroke", "rgba(36,48,64,0.85)");
-    path.setAttribute("data-dir-index", i);
     path.style.cursor = "pointer";
-    path.style.transition = "fill 0.15s ease, opacity 0.15s ease";
 
     const over = () => { selectDirection(i); };
     path.addEventListener("mouseover", over);
     path.addEventListener("click", over);
-    path.addEventListener("touchstart", (e) => { e.preventDefault(); over(); }, {passive: false});
+    path.addEventListener("touchstart", (e) => { e.preventDefault(); over(); }, { passive: false });
 
     svg.appendChild(path);
 
-    // Rótulos (N, NE, E, SE, S, SW, W, NW)
     const mid = (start + end) / 2;
     const labelPos = polar(cx, cy, (r + inner) / 2, mid);
     const lbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
@@ -132,7 +116,6 @@ function buildWCSvg8() {
     svg.appendChild(lbl);
   }
 
-  // Anel interno
   const innerRing = document.createElementNS("http://www.w3.org/2000/svg", "circle");
   innerRing.setAttribute("cx", cx); innerRing.setAttribute("cy", cy); innerRing.setAttribute("r", inner);
   innerRing.setAttribute("fill", "rgba(10,14,20,0.9)");
@@ -158,79 +141,87 @@ function defs() {
   return defs;
 }
 
-function polar(cx, cy, r, angle) {
-  return { x: cx + r * Math.cos(angle), y: cy + r * Math.sin(angle) };
-}
-
-/* Seletores de vento (1..26) */
+/* Seletores de vento */
 function buildWindSelectors() {
   const leftCol = document.getElementById("windLeftCol");
   const rightCol = document.getElementById("windRightCol");
+  if (!leftCol || !rightCol) return;
+
+  leftCol.innerHTML = "";
+  rightCol.innerHTML = "";
 
   for (let n = 1; n <= 26; n++) {
     const el = document.createElement("div");
     el.className = "wind-btn";
-    el.tabIndex = 0;
     el.textContent = n;
     el.dataset.value = n;
-
     const set = () => { selectWindStrength(n); };
     el.addEventListener("mouseenter", set);
-    el.addEventListener("mousemove", set);
     el.addEventListener("click", set);
-    el.addEventListener("touchstart", (e) => { e.preventDefault(); set(); }, {passive: false});
-
+    el.addEventListener("touchstart", (e) => { e.preventDefault(); set(); }, { passive: false });
     if (n <= 13) leftCol.appendChild(el);
     else rightCol.appendChild(el);
   }
 }
 
-/* RDP (hover cumulativo estável, sem "piscar") */
-function initRDP() {
+/* Nova RDP com 30 divisões (800px, sem legenda) */
+function initRDP30() {
   const rdp = document.getElementById("rdp");
-  const segs = Array.from(rdp.querySelectorAll(".rdp-segment"));
+  if (!rdp) return;
 
-  let lastIdx = -1;
-  const setHover = (idx) => {
-    if (idx === lastIdx) return; // evita redesenhos
-    lastIdx = idx;
-    rdp.style.setProperty("--hover-n", String(idx + 1));
-    segs.forEach((s, i) => s.classList.toggle("hovered", i === idx));
-    selectDistance(idx + 1);
-  };
+  rdp.innerHTML = "";
+  const totalSegments = 30;
+  const segmentWidth = 800 / totalSegments;
 
-  segs.forEach((seg, idx) => {
-    const handler = () => setHover(idx);
+  for (let i = 0; i < totalSegments; i++) {
+    const seg = document.createElement("div");
+    seg.className = "rdp-segment";
+    seg.dataset.index = String(i);
+    seg.style.width = `${segmentWidth}px`;
+
+    const handler = () => selectRDP(i);
     seg.addEventListener("mouseover", handler);
     seg.addEventListener("click", handler);
-    seg.addEventListener("touchstart", (e) => { e.preventDefault(); handler(); }, {passive: false});
-  });
+    seg.addEventListener("touchstart", (e) => { e.preventDefault(); handler(); }, { passive: false });
+
+    rdp.appendChild(seg);
+  }
+
+  // Seleciona a posição inicial (0 => 89°)
+  selectRDP(0);
 }
 
-/* Handlers de seleção */
+/* Seleção da posição na RDP */
+function selectRDP(idx) {
+  state.rdpIndex = clamp(idx, 0, 29);
+  state.baseAngle = 89 - state.rdpIndex;
+
+  const segs = document.querySelectorAll(".rdp-segment");
+  segs.forEach((s) => {
+    const i = Number(s.dataset.index);
+    s.classList.toggle("active", i === state.rdpIndex);
+    s.classList.toggle("active-left", i <= state.rdpIndex);
+  });
+
+  compute();
+}
+
+/* Seleção de direção */
 function selectDirection(i) {
   state.directionIndex = i;
-  document.getElementById("dirLabel").textContent = DIRECTIONS[i].label;
+  const lbl = document.getElementById("dirLabel");
+  if (lbl) lbl.textContent = DIRECTIONS[i].label;
   highlightSector(i);
   compute();
 }
 
+/* Seleção de força do vento */
 function selectWindStrength(n) {
   state.windStrength = n;
-  document.getElementById("windStrength").textContent = n;
+  const ws = document.getElementById("windStrength");
+  if (ws) ws.textContent = n;
   document.querySelectorAll(".wind-btn").forEach(b => b.classList.toggle("active", Number(b.dataset.value) === n));
   compute();
-}
-
-function selectDistance(q) {
-  state.distanceQuarter = q;
-  document.getElementById("rdpLabel").textContent = `${q}/4`;
-  const segs = document.querySelectorAll(".rdp-segment");
-  segs.forEach((s, i) => {
-    s.classList.toggle("active", i + 1 === q);
-    s.classList.toggle("active-left", i + 1 <= q);
-  });
-  // A distância não influencia o cálculo neste projeto.
 }
 
 /* Destaque visual do setor selecionado */
@@ -238,24 +229,54 @@ function highlightSector(index) {
   const paths = document.querySelectorAll("#wcSvg path");
   paths.forEach((p, i) => {
     p.style.opacity = (i === index ? "1.0" : "0.85");
-    p.setAttribute("fill", i === index ? "rgba(127,216,255,0.24)" : (i % 2 === 0 ? "rgba(98,196,255,0.08)" : "rgba(98,196,255,0.04)"));
+    p.setAttribute(
+      "fill",
+      i === index
+        ? "rgba(127,216,255,0.24)"
+        : (i % 2 === 0 ? "rgba(98,196,255,0.08)" : "rgba(98,196,255,0.04)")
+    );
   });
 }
 
-/* Atualização de painel e centro da WC */
-function updatePanel(angle) {
-  const a = angle != null ? clamp(angle, 0, 90) : state.baseAngle;
-  const aText = fmt(a);
-  document.getElementById("baseAngle").textContent = state.baseAngle;
-  document.getElementById("correctedAngle").textContent = aText;
+/* Atualização de painel e centro da WC — com overcap visual */
+function updatePanel(corrected) {
+  const base = clamp(state.baseAngle ?? 89, 60, 89);
+  // remover clamp superior para detectar overcap corretamente
+  const a = corrected != null ? clamp(corrected, 0, 999) : base;
+
+  const baseAngleEl = document.getElementById("baseAngle");
+  if (baseAngleEl) baseAngleEl.textContent = base;
+
+  const correctedAngleEl = document.getElementById("correctedAngle");
+  if (correctedAngleEl) correctedAngleEl.textContent = fmt(a);
+
   const centerEl = document.getElementById("wcCenterAngle");
-  if (centerEl) centerEl.textContent = `${aText}°`;
+  if (centerEl) {
+    centerEl.textContent = `${fmt(a)}°`;
+    if (a > 89) {
+      centerEl.classList.add("overcap");
+    } else {
+      centerEl.classList.remove("overcap");
+    }
+  }
+}
+
+/* Texto flutuante de força fixa */
+function updateForceText(forceVal) {
+  const txt = `USE FORÇA: ${forceVal.toFixed(1)}`;
+  const el1 = document.getElementById("force-info");
+  const el2 = document.getElementById("forceInfo");
+  if (el1) el1.textContent = txt;
+  if (el2) el2.textContent = txt;
 }
 
 /* Cálculo do ângulo corrigido */
 function compute() {
   const w = state.windStrength;
   const d = state.directionIndex;
+
+  // força fixa sempre visível
+  updateForceText(2.4);
 
   if (d == null) { updatePanel(state.baseAngle); return; }
   const dir = DIRECTIONS[d];
@@ -269,7 +290,7 @@ function compute() {
     return;
   }
 
-  const key = dir.key; // "NE", "E", etc.
+  const key = dir.key;
   const rule = RULES[key];
   if (!rule) {
     updatePanel(state.baseAngle);
@@ -281,40 +302,36 @@ function compute() {
     case "neutral":
       adjustment = 0;
       break;
-
-    case "custom": // NE
+    case "custom":
       adjustment = rule.exec(w);
       break;
-
-    case "simpleDiv": // SE
+    case "simpleDiv":
       adjustment = w / rule.div;
       break;
-
-    case "divList": { // E, W, SW com exceções
+    case "divList": {
       const useList = rule.list && rule.list.includes(w);
       const div = useList ? rule.listDiv : rule.rightDiv;
       adjustment = w / div;
       break;
     }
-
-    case "divWithThresholds": { // NW
+    case "divWithThresholds": {
       adjustment = w / rule.div;
       if (Array.isArray(rule.thresholds)) {
         for (const th of rule.thresholds) {
           if (th.cond && th.cond(w)) {
-            adjustment += th.delta; // delta negativo => reduz ajuste
+            adjustment += th.delta;
           }
         }
       }
       adjustment = Math.max(0, adjustment);
       break;
     }
-
     default:
       adjustment = 0;
   }
 
   const base = state.baseAngle;
   const finalAngle = (dir.side === "left") ? (base - adjustment) : (base + adjustment);
+
   updatePanel(finalAngle);
 }
