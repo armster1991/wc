@@ -15,7 +15,7 @@ A versão online do projeto está disponível por meio das páginas do github pe
 Você interage com três elementos principais:
 
 1. **Régua de Posição** — localizada no rodapé da tela.  
-   Aqui você indica **onde o alvo está** em relação a você (1/4, 2/4, 3/4 ou 4/4 da distância máxima).
+   Aqui você indica **onde o alvo está** em relação a você.
 
 2. **Seletores de Força do Vento** — botões numerados de 1 a 26 nas laterais da tela.  
    Eles representam a intensidade do vento.
@@ -25,8 +25,9 @@ Você interage com três elementos principais:
 
 Ao selecionar **posição**, **força** e **direção**, a página calcula e exibe:
 
-- O **ângulo sugerido** (base 70° para a maioria das direções)
+- O **ângulo sugerido** (baseado na posição da Régua de Posição)
 - A **força sugerida** para o tiro
+- Caso o angulo seja impossível, ele piscará em vermelho e você deverá ajustar a força, diminuindo a mesma dependendo da força do vento.
 
 ---
 
@@ -80,5 +81,6 @@ Se quiser se aprofundar em como funcionam os *windcharts* no Gunbound, recomendo
 
 Existe um botão clicável no topo da tela que muda o modo de exibição da página.
 Esse modo existe caso você queira "encaixar" a tela do jogo na página para testes em tempo real, só dando hover nos elementos.
+
 
 
