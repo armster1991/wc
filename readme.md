@@ -1,21 +1,21 @@
-# 🌬️ Windchart Interativo — Gunbound Gravity Game Hub
+# Windchart Interativo — Gunbound GGH
 
-Este projeto é uma **versão interativa** dos famosos *windcharts* que circulam pela internet para o jogo **Gunbound Gravity Game Hub**.  
+Este projeto é uma **versão interativa** dos famosos *windcharts* que circulam pela internet para o jogo **Gunbound GGH**.  
 Ele foi pensado principalmente para **treino com o Mobile Armor**, mas pode ser útil para outros mobiles também.
 
 ---
 
-## 📌 Como funciona
+## Como funciona
 
 Você interage com três elementos principais:
 
-1. **Régua de Posição (RDP)** — localizada no rodapé da tela.  
+1. **Régua de Posição** — localizada no rodapé da tela.  
    Aqui você indica **onde o alvo está** em relação a você (1/4, 2/4, 3/4 ou 4/4 da distância máxima).
 
-2. **Seletores de Força do Vento (SDFV)** — botões numerados de 1 a 26 nas laterais da tela.  
+2. **Seletores de Força do Vento** — botões numerados de 1 a 26 nas laterais da tela.  
    Eles representam a intensidade do vento.
 
-3. **Rosa dos Ventos (WC)** — no centro da tela.  
+3. **Rosa dos Ventos** — no centro da tela.  
    Aqui você escolhe a **direção do vento**.
 
 Ao selecionar **posição**, **força** e **direção**, a página calcula e exibe:
@@ -25,39 +25,39 @@ Ao selecionar **posição**, **força** e **direção**, a página calcula e exi
 
 ---
 
-## 🧭 Direções e comportamento
+## Direções e comportamento
 
 As direções são divididas em **a favor** e **contra**:
 
 - **A favor**:  
-  - Leste → `→`  
-  - Nordeste ↗ `↗`  
-  - Sudeste ↘ `↘`  
+  - Leste `→`  
+  - Nordeste `↗`  
+  - Sudeste `↘`  
   Nessas direções, o vento ajuda o projétil, então o cálculo **soma** ao ângulo base.
 
 - **Contra**:  
-  - Oeste ← `←`  
-  - Noroeste ↖ `↖`  
-  - Sudoeste ↙ `↙`  
+  - Oeste `←`  
+  - Noroeste `↖`  
+  - Sudoeste `↙`  
   Nessas direções, o vento atrapalha, então o cálculo **subtrai** do ângulo base.
 
 - **Especiais**:  
-  - Norte ↑ `↑`  
-  - Sul ↓ `↓`  
+  - Norte `↑`  
+  - Sul `↓`  
   Nessas direções, **não há ajuste no ângulo** — o ajuste é feito na **força**:
     - **Norte**: para cada 5 de vento, **+0.1** de força  
     - **Sul**: para cada 8 de vento, **+0.1** de força
 
 ---
 
-## 🔄 Importante sobre a posição do jogador
+## Importante sobre a posição do jogador
 
 Sempre pense na direção do vento **em relação ao alvo**.  
 Se você estiver **à direita do alvo**, deve **inverter mentalmente** as direções do vento para fazer o cálculo correto.
 
 ---
 
-## ⚠️ Aviso importante
+## Aviso importante
 
 Este projeto está **em fase de testes** — repito: **EM FASE DE TESTES**.  
 Ele pode conter erros, ajustes pendentes e comportamentos inesperados.  
@@ -65,29 +65,14 @@ Não me responsabilizo pelo uso nem por possíveis tiros errados que você possa
 
 ---
 
-## 📖 Resumo do uso
-
-1. **Selecione na RDP** onde o alvo está (1/4 até 4/4 da distância).  
-2. **Escolha a intensidade do vento** nos botões laterais (1 a 26).  
-3. **Selecione a direção do vento** na rosa dos ventos.  
-4. A página mostrará o **ângulo sugerido** e a **força sugerida** para o tiro.
-
----
-
-## 🛠️ Status do projeto
-
-- **Fase de testes** (sim, de novo 😄)  
-- Ainda precisa de ajustes finos nos cálculos e na interface  
-- Foco inicial no **Mobile Armor** para treino
-
----
-
-## 📚 Quer aprender mais?
+## Quer aprender mais?
 
 Se quiser se aprofundar em como funcionam os *windcharts* no Gunbound, recomendo pesquisar no fórum do **GBGL do Creedo** — lá você encontra informações detalhadas, tabelas e discussões da comunidade.
 
 ---
 
-## 🎯 Sobre
+## Modos de exibição
 
-Este é um **windchart interativo** para o jogo **Gunbound Gravity Game Hub**, criado para facilitar o treino e estudo de cálculos de vento e ângulo de tiro.
+Existe um botão clicável no topo da tela que muda o modo de exibição da página.
+Esse modo existe caso você queira "encaixar" a tela do jogo na página para testes em tempo real, só dando hover nos elementos.
+
