@@ -1,0 +1,41 @@
+/* Esconde painel */
+.panel {
+  display: none !important;
+}
+
+/* Coluna única fixa à esquerda */
+.wind-selectors.left {
+  position: fixed;
+  top: 50px;
+  left: 20px;
+  transform: none;
+  padding: 0;
+}
+
+.wind-selectors.right {
+  display: none !important; /* não usamos no gamemode */
+}
+
+.wind-col {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wind-btn {
+  width: 48px;
+  height: 28px;
+  line-height: 28px;
+  font-size: 12px;
+}
+
+/* WC no lado direito, centralizada verticalmente */
+.wc {
+  position: fixed;
+  top: 30%;
+  right: 50px;
+  transform: translateY(-50%);
+}
+
+.center-stack {
+  align-items: flex-end;
+}
