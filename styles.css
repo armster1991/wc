@@ -165,7 +165,7 @@ body {
   width: 800px;
   height: 40px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(30, 1fr); /* agora 30 divisões iguais */
   background: linear-gradient(180deg, #0c1320, #080f1a);
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -176,19 +176,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--muted);
-  font-weight: 600;
   cursor: pointer;
 }
 .rdp .rdp-segment.active,
 .rdp .rdp-segment.active-left {
   background: var(--hover);
-  color: var(--text);
 }
 .rdp .rdp-segment.hovered,
 .rdp .rdp-segment:nth-child(-n+var(--hover-n)) {
   background: var(--hover);
-  color: var(--text);
 }
 
 /* Responsivo */
@@ -217,5 +213,21 @@ body {
   }
   .rdp {
     width: min(92vw, 800px);
+    grid-template-columns: repeat(30, 1fr);
   }
+}
+
+@keyframes pulse-red {
+  0%, 100% {
+    color: #ff4d4d;
+    text-shadow: 0 0 6px rgba(255,77,77,0.8), 0 0 12px rgba(255,0,0,0.6);
+  }
+  50% {
+    color: #ff1a1a;
+    text-shadow: 0 0 12px rgba(255,77,77,1), 0 0 20px rgba(255,0,0,0.8);
+  }
+}
+
+.wc-center-angle.overcap {
+  animation: pulse-red 1s infinite;
 }
