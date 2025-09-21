@@ -18,24 +18,30 @@ const DIRECTIONS = [
   { key: "NW", label: "↖ NW", side: "left" }
 ];
 
-/* Regras do wind chart */
+/* Regras do wind chart (atualizadas) */
 const RULES = {
-  "N":   { type: "neutral" },
-  "S":   { type: "neutral" },
+  "N":   { type: "neutral" }, // ajuste de força no info.js
+  "S":   { type: "neutral" }, // ajuste de força no info.js
   "NE":  { type: "custom", exec: (wind) => {
-            const a1 = wind / 2;
-            const a2 = a1 / 2;
+            const a1 = Math.floor(wind / 2);
+            const a2 = Math.floor(a1 / 2);
             let adj = a1 + a2;
-            if (wind > 11) adj -= 1;
+            if (wind >= 12) adj -= 1;
             return Math.max(0, adj);
           } },
-  "E":   { type: "divList", rightDiv: 2, list: [9,10,11,19,20,21], listDiv: 10 },
+  "E":   { type: "rangeAdd", div: 2, thresholds: [
+            { cond: (w) => w > 18, delta: 2 },
+            { cond: (w) => w > 7,  delta: 1 }
+          ] },
   "SE":  { type: "simpleDiv", div: 4 },
-  "SW":  { type: "divList", rightDiv: 2, list: [9,10,11,29,20,21], listDiv: 10 },
-  "W":   { type: "divList", rightDiv: 2, list: [9,10,11,19,20,21], listDiv: 10 },
+  "SW":  { type: "swRule" }, // wind/2 + wind/10
+  "W":   { type: "rangeAdd", div: 2, thresholds: [
+            { cond: (w) => w > 18, delta: 2 },
+            { cond: (w) => w > 7,  delta: 1 }
+          ] },
   "NW":  { type: "divWithThresholds", div: 3,
            thresholds: [
-             { cond: (w) => w > 12,  delta: -1 },
+             { cond: (w) => w >= 13, delta: -1 },
              { cond: (w) => w >= 25, delta: -2 }
            ] }
 };
@@ -158,7 +164,8 @@ function buildWindSelectors() {
     const set = () => { selectWindStrength(n); };
     el.addEventListener("mouseenter", set);
     el.addEventListener("click", set);
-    el.addEventListener("touchstart", (e) => { e.preventDefault(); set(); }, { passive: false });
+    el.addEventListener("touchstart", (e) => { e.preventDefault(); set(); }, { passive:false });
+
     if (n <= 13) leftCol.appendChild(el);
     else rightCol.appendChild(el);
   }
@@ -241,7 +248,6 @@ function highlightSector(index) {
 /* Atualização de painel e centro da WC — com overcap visual */
 function updatePanel(corrected) {
   const base = clamp(state.baseAngle ?? 89, 60, 89);
-  // remover clamp superior para detectar overcap corretamente
   const a = corrected != null ? clamp(corrected, 0, 999) : base;
 
   const baseAngleEl = document.getElementById("baseAngle");
@@ -275,7 +281,6 @@ function compute() {
   const w = state.windStrength;
   const d = state.directionIndex;
 
-  // força fixa sempre visível
   updateForceText(2.4);
 
   if (d == null) { updatePanel(state.baseAngle); return; }
@@ -306,16 +311,23 @@ function compute() {
       adjustment = rule.exec(w);
       break;
     case "simpleDiv":
-      adjustment = w / rule.div;
+      adjustment = Math.floor(w / rule.div);
       break;
-    case "divList": {
-      const useList = rule.list && rule.list.includes(w);
-      const div = useList ? rule.listDiv : rule.rightDiv;
-      adjustment = w / div;
+    case "rangeAdd":
+      adjustment = Math.floor(w / rule.div);
+      if (Array.isArray(rule.thresholds)) {
+        for (const th of rule.thresholds) {
+          if (th.cond && th.cond(w)) {
+            adjustment += th.delta;
+          }
+        }
+      }
       break;
-    }
-    case "divWithThresholds": {
-      adjustment = w / rule.div;
+    case "swRule":
+      adjustment = Math.floor(w / 2) + Math.floor(w / 10);
+      break;
+    case "divWithThresholds":
+      adjustment = Math.floor(w / rule.div);
       if (Array.isArray(rule.thresholds)) {
         for (const th of rule.thresholds) {
           if (th.cond && th.cond(w)) {
@@ -325,7 +337,6 @@ function compute() {
       }
       adjustment = Math.max(0, adjustment);
       break;
-    }
     default:
       adjustment = 0;
   }
