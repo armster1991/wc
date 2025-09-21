@@ -1,4 +1,4 @@
-// === Força Info Plug-and-Play (com ajuste N/S e overcap) ===
+// === Força Info Plug-and-Play (com ajuste N/S e overcap - atualizado) ===
 document.addEventListener('DOMContentLoaded', () => {
   const style = document.createElement('style');
   style.textContent = `
@@ -46,14 +46,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Base fixa
     let force = 2.4;
 
-    // Ajuste para Norte
+    // Ajuste para Norte (reduz)
     if (/↑\s*N/i.test(dirText)) {
-      force += (windStr / 5) * 0.1;
+      const steps = Math.floor(windStr / 7);
+      force -= steps * 0.1;
     }
 
-    // Ajuste para Sul
+    // Ajuste para Sul (aumenta)
     else if (/↓\s*S/i.test(dirText)) {
-      force += (windStr / 8) * 0.1;
+      const steps = Math.floor(windStr / 7);
+      force += steps * 0.1;
     }
 
     infoEl.textContent = `USE FORÇA: ${force.toFixed(1)}`;
