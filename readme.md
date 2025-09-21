@@ -51,8 +51,8 @@ As direções são divididas em **a favor** e **contra**:
   - Norte `↑`  
   - Sul `↓`  
   Nessas direções, **não há ajuste no ângulo** — o ajuste é feito na **força**:
-    - **Norte**: para cada 5 de vento, **+0.1** de força  
-    - **Sul**: para cada 8 de vento, **+0.1** de força
+    - **Norte**: para cada 7 de vento, **-0.1** de força  
+    - **Sul**: para cada 7 de vento, **+0.1** de força
 
 ---
 
@@ -81,6 +81,7 @@ Se quiser se aprofundar em como funcionam os *windcharts* no Gunbound, recomendo
 
 Existe um botão clicável no topo da tela que muda o modo de exibição da página.
 Esse modo existe caso você queira "encaixar" a tela do jogo na página para testes em tempo real, só dando hover nos elementos.
+
 
 
 
