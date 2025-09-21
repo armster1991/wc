@@ -82,6 +82,13 @@ Se quiser se aprofundar em como funcionam os *windcharts* no Gunbound, recomendo
 Existe um botão clicável no topo da tela que muda o modo de exibição da página.
 Esse modo existe caso você queira "encaixar" a tela do jogo na página para testes em tempo real, só dando hover nos elementos.
 
+---
 
+### Referência de Windchart
 
+Os dados utilizados no windchart interativo deste projeto foram baseados nas informações da imagem abaixo, respeitando os ajustes para os oito pontos cardeais principais:  
+**Norte, Sul, Leste, Oeste, Nordeste, Noroeste, Sudeste e Sudoeste.**
 
+Para ajustes mais específicos em sub-direções de vento ou situações excepcionais, recomenda-se consultar diretamente a imagem original:
+
+![Windchart do Creedo](wind-chart-creedo.png)
